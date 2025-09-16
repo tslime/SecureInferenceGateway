@@ -1,75 +1,136 @@
 # Secure Multi-Model Inference Gateway (FastAPI + Ollama)
 
-A local HTTP server for secure prompt routing to multiple locally installed LLMs using [Ollama](https://ollama.com). Built with FastAPI, the gateway enforces API key authentication, model validation, and fault-tolerant streaming, and is intended for air-gapped or privacy-sensitive deployments (e.g., defense, research, simulation environments).
-
-
-
 ## Overview
 
-This project implements a secure inference gateway that:
+**SecureInferenceGateway** is a Python-based FastAPI gateway that acts as a secure interface to serve machine learning models via HTTP. It integrates with an Ollama server for model inference and enforces API key-based authentication on requests, making it suitable for secure deployment in internal networks.
 
-- Exposes a single HTTP POST endpoint (`/request`)
-- Accepts prompts and model names via JSON
-- Routes the prompt to a specified local LLM via Ollama
-- Streams the response line-by-line back to the client
-- Enforces access control with an API key
-- Handles upstream failures gracefully (e.g., Ollama not reachable)
+## Purpose
 
+- Provide a secure, authenticated HTTP API for accessing and generating responses from locally hosted machine learning models.
+- Act as a gateway between clients and an Ollama server running on the local network.
 
-## Features
+## Main Features
 
-- Model routing (e.g., `"phi"`, `"mistral"`, `"tinyllama"`)
-- API key check (`X-API-KEY`)
-- JSON-based POST request format
-- Streaming response reconstruction from JSONL
-- Exception handling for broken model connections
-- All models run locally — no cloud access required
+- **FastAPI Web Server**: Exposes RESTful endpoints for model inference.
+- **API Key Authentication**: Requires `X-API-KEY` header for authorization (default key: `admin`).
+- **Dynamic Model Discovery**: Fetches available models from the Ollama server.
+- **Streaming Response Handling**: Handles streamed model responses efficiently.
+- **Customizable Host/Port**: Easily configurable for different network setups.
 
+## Architecture
 
-## Architecture Summary
+- **Ollama Server**: The backend ML inference engine, expected to be running at `http://127.0.0.1:11434`.
+- **FastAPI Gateway**: Receives and forwards requests to Ollama, enforcing authentication and formatting responses.
 
-- FastAPI app runs on `http://localhost:8085`
-- Loads available model list from Ollama via `/api/tags`
-- Validates all requested model names before inference
-- Sends prompt to `http://localhost:11434/api/generate`
-- Collects `"response"` fields from JSONL chunks
-- Returns full answer as plain text
+## Installation
 
-## Security Model
+### 1. Python Dependencies
 
-| Layer | Mechanism |
-|-------|-----------|
-| API Access | Requires valid `X-API-KEY` header |
-| Model validation | Rejects unknown or unsupported models |
-| Isolation | No external HTTP requests made; inference stays local |
-| Failure handling | Returns status `502` if Ollama fails or is offline |
-
-
-## 🛠️ Installing Dependencies
-
-Before running the Secure Inference Gateway, make sure you have:
-
-- Python 3.8+
-- [Ollama](https://ollama.com) installed and configured
-- Required Python packages
-
-### 1. Install Python Dependencies
-
-It's recommended to use a virtual environment:
+Install the required Python packages:
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install fastapi uvicorn requests
+pip install fastapi uvicorn requests pydantic
 ```
 
+### 2. Install Ollama
+
+Ollama is required to serve models locally.
+
+- Visit [Ollama's official website](https://ollama.com/download) for installation instructions.
+- Typical installation (Linux/macOS):
+
+    ```bash
+    curl -fsSL https://ollama.com/install.sh | sh
+    ```
+
+- For Windows, download the installer from their website.
+
+- After installation, start Ollama:
+
+    ```bash
+    ollama serve
+    ```
+
+### 3. Pulling Models with Ollama
+
+Ollama supports various models such as Llama 2, Mistral, etc.
+
+To pull a model (example: Llama2):
+
+```bash
+ollama pull llama2
+```
+
+You can list available models with:
+
+```bash
+ollama list
+```
+
+To pull other models, see [Ollama's model library](https://ollama.com/library).
+
+### 4. Run SecureInferenceGateway
+
+Make sure your Ollama server is running locally (`ollama serve`) and models are pulled.
+
+Execute the main server script:
+
+```bash
+python Secureig.py
+```
+
+By default, it launches on `192.168.2.57:8085`. Change the IP and port in the script as needed.
 
 ## Usage
 
-### Request Format (JSON)
+### API Authentication
 
-```json
-{
-  "model": "phi",
-  "request": "Give me a fun fact about gravity."
-}
+Clients must supply an API key:
+```
+X-API-KEY: admin
+```
+Requests without this key will receive a `403 Unauthorized access` response.
+
+### API Endpoints
+
+#### `POST /request`
+
+- **Purpose**: Submit a prompt to a selected model.
+- **Request Body** (`RStructure`):
+  - `model`: Name of the model (as discovered via `/api/tags` from Ollama).
+  - `request`: The prompt/content for inference.
+
+- **Headers**:
+  - `X-API-KEY`: API key (must be "admin" by default).
+
+- **Response**:
+  - On success: Text response generated by the selected model.
+  - On error: Plain text error message, with appropriate HTTP status codes.
+
+#### Model Discovery
+
+Internally, the gateway queries Ollama’s `/api/tags` endpoint to fetch available model names.
+
+## Example Usage
+
+```bash
+curl -X POST http://192.168.2.57:8085/request \
+  -H "X-API-KEY: admin" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "llama2", "request": "What do you think about gravity?"}'
+```
+
+## Error Handling
+
+- **No Models Available**: Returns 403 and message if Ollama server is unreachable or has no models.
+- **Unauthorized Access**: Returns 403 if API key is missing or incorrect.
+- **Model Unavailable**: Returns 403 if selected model does not exist or cannot be served.
+
+## License
+
+This project is licensed under the [MIT License](https://github.com/tslime/SecureInferenceGateway/blob/main/LICENSE).
+
+## Contribution
+
+For contributions, open issues or pull requests in the [GitHub repository](https://github.com/tslime/SecureInferenceGateway).
+
