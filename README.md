@@ -145,3 +145,31 @@ curl -X POST http://localhost:8085/request \
 - **Unauthorized Access**: Returns 403 if API key is missing or incorrect.
 - **Model Unavailable**: Returns 403 if selected model does not exist or cannot be served.
 
+## Mission-Critical & Defense Applications
+
+SecureInferenceGateway is especially suited for high-security, mission-critical environments such as defense departments, intelligence agencies, and critical infrastructure operations. Here’s why:
+
+### Key Advantages
+
+- **Network Isolation:** Can be deployed in strictly controlled internal networks, minimizing exposure to external threats.
+- **Local Model Hosting:** Integrates with Ollama to ensure all AI models and data remain on-premises, supporting strict data sovereignty requirements.
+- **Authentication & Access Control:** API key-based access (extensible to advanced mechanisms) helps restrict use to authorized personnel only.
+- **Auditability:** Centralized gateway for all inference requests enables robust logging and activity monitoring.
+- **Customizability:** Built on FastAPI, allowing integration of additional security features like multi-factor authentication, role-based access, and advanced encryption.
+
+### Example Use Cases
+
+- **Battlefield Decision Support:** Secure, real-time access to AI models for operational analysis and tactical assistance.
+- **Mission Planning:** Allows analysts and planners to query LLMs for logistics, intelligence, and scenario simulation in secure environments.
+- **Research & Development:** Supports sensitive AI research where data and models must remain confidential and access must be tightly controlled.
+
+### Recommendations for Defense/Mission-Critical Use
+
+- **Upgrade Authentication:** Implement stronger authentication (certificates, MFA, etc.) beyond simple API keys.
+- **Enforce Encryption:** Use HTTPS/TLS for all traffic.
+- **Enhance Monitoring:** Integrate with SIEM and automated alerting systems.
+- **Comply with Standards:** Ensure all components conform to relevant security, compliance, and operational standards.
+
+> **Note:** While Secure Inference Gateway provides a strong foundation for secure AI inference, organizations deploying it for defense or mission-critical purposes should perform thorough security audits and adapt the codebase to meet their specific requirements.
+
+
