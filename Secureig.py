@@ -81,4 +81,4 @@ def model_selector(m,p):
 
 
 
-launch_http_server(connection_point,"192.168.2.57",8085)
+launch_http_server(connection_point,"127.0.0.1",11434)
