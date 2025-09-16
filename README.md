@@ -109,12 +109,31 @@ Requests without this key will receive a `403 Unauthorized access` response.
 
 #### Model Discovery
 
-Internally, the gateway queries Ollama’s `/api/tags` endpoint to fetch available model names.
+Internally, the gateway queries Ollama’s `/api/tags` endpoint to fetch available model names. This is achieved using the following algorithm:
+
+```
+def get_models():
+
+    try:
+        mod = requests.get("http://127.0.0.1:11434/api/tags")
+
+        temp = []
+        for m in mod.json()["models"]:
+            temp.append(m["name"].split(":")[0])
+    
+        return set(temp)
+    except requests.exceptions.RequestException as e:
+        print("There are no models \n",e)
+        return PlainTextResponse("There are no models \n",status_code=403)
+
+```
+
+As delineated in the algorithm, ollama keeps the names of the models in the /api/tags directory. Note that many model names come with an additional tag following a colon, which usually indicates the version of the model (e.g., llama:latest). These secondary tags are removed using `split(":")[0]' to keep only the models' names together in a set. This resulting set is useful to validate the presence of a given model when a client sends a request to prompt a specific model. In this way, we can inform the client whether we can complete its request or not. For example, by replying to a client with the message "Unsupported model" in case the model doesn't exist in our database (see the post request code for more details). 
 
 ## Example Usage
 
 ```bash
-curl -X POST http://192.168.2.57:8085/request \
+curl -X POST http://localhost:8085/request \
   -H "X-API-KEY: admin" \
   -H "Content-Type: application/json" \
   -d '{"model": "llama2", "request": "What do you think about gravity?"}'
@@ -125,7 +144,4 @@ curl -X POST http://192.168.2.57:8085/request \
 - **No Models Available**: Returns 403 and message if Ollama server is unreachable or has no models.
 - **Unauthorized Access**: Returns 403 if API key is missing or incorrect.
 - **Model Unavailable**: Returns 403 if selected model does not exist or cannot be served.
-## Contribution
-
-For contributions, open issues or pull requests in the [GitHub repository](https://github.com/tslime/SecureInferenceGateway).
 
