@@ -46,39 +46,41 @@ async def parse_request(r: RStructure,api_key:str = Header(...,alias="X-API-KEY"
     
         m = r.model
         p = r.request
-    
-        return PlainTextResponse(model_reply(m,p))
+
+        reply = model_reply(m,p)
+
+        if reply == "\n Unsupported model \n\n":
+            print("test \n")
+            return PlainTextResponse("Unsupported model \n",status_code=404)
+        else:
+            return PlainTextResponse(reply)
     except requests.exceptions.RequestException as e:
-        print("Ollama server unreachable",e)
+        print("Ollama server unreachable \n",e)
         return PlainTextResponse("Ollama server is unreachable \n",status_code=503)
 
 
 def model_reply(m,prompt):
     if m not in models:
-        return "\n Unsupported model \n\n "
+        return "\n Unsupported model \n\n"
     else:
         return model_selector(m,prompt)
 
 def model_selector(m,p):
     
-    try:
-        reply = requests.post(
-            "http://127.0.0.1:11434/api/generate",
-            json={
+    reply = requests.post(
+        "http://127.0.0.1:11434/api/generate",
+        json={
                 "model": m,
                 "prompt": p
             }
         ) 
 
-        result = ""
-        for line in reply.iter_lines():
-            result += json.loads(line.decode("utf-8")).get("response","")
+    result = ""
+    for line in reply.iter_lines():
+        result += json.loads(line.decode("utf-8")).get("response","")
     
-        return "\n" + result + "\n\n"
-    except requests.exceptions.RequestException as e:
-        print("Model unavailable \n",e)
-        return PlainTextResponse("Model unavailable",status_code=403)
+    return "\n" + result + "\n\n"
 
 
 
-launch_http_server(connection_point,"127.0.0.1",11434)
+launch_http_server(connection_point,"192.168.2.57",8085)
