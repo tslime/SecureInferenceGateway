@@ -26,7 +26,7 @@ def launch_http_server(connection_point,ip,p):
 def get_models():
 
     try:
-        mod = requests.get("http://127.0.0.1:11434/api/tags")
+        mod = requests.get("http://IP_WHERE_OLLAMA_SERVES:11434/api/tags")
 
         temp = []
         for m in mod.json()["models"]:
@@ -68,7 +68,7 @@ def model_reply(m,prompt):
 def model_selector(m,p):
     
     reply = requests.post(
-        "http://127.0.0.1:11434/api/generate",
+        "http://IP_WHERE_OLLAMA_SERVES:11434/api/generate",
         json={
                 "model": m,
                 "prompt": p
@@ -83,4 +83,4 @@ def model_selector(m,p):
 
 
 
-launch_http_server(connection_point,"192.168.2.57",8085)
+launch_http_server(connection_point,"LOCALHOST_IP",NON_RESERVED_PORT_NUMBER)
