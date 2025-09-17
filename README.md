@@ -140,7 +140,18 @@ If Ollama runs on `192.168.2.100:11434`, set your gateway backend URL to `http:/
 
 > **Note:** Ensure that the Ollama server is running and network connections are permitted between the gateway and Ollama host.
 
-Once the backend connectivity is set then you can query models using a syntax similar to the following:
+### Exposing Ollama on All Network Interfaces
+
+By default, Ollama only listens for requests on `127.0.0.1` (localhost), meaning it is not accessible from other machines.  
+**To make Ollama accessible from other devices on your network, start it with:**
+
+```bash
+OLLAMA_HOST=0.0.0.0 ollama serve
+```
+
+This will allow Ollama to accept connections on all available network interfaces, including your server’s LAN IP.
+
+**Once backend connectivity is set, you can query models using a syntax similar to the following:**
 
 ```bash
 curl -X POST http://IP_WHERE_OLLAMA_IS_RUNNING:PORT_NUMBER/request \
@@ -148,6 +159,7 @@ curl -X POST http://IP_WHERE_OLLAMA_IS_RUNNING:PORT_NUMBER/request \
   -H "Content-Type: application/json" \
   -d '{"model": "llama2", "request": "What do you think about gravity?"}'
 ```
+
 
 ## Error Handling
 
