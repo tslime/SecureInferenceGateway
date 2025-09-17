@@ -130,7 +130,7 @@ def get_models():
 
 As delineated in the algorithm, ollama keeps the names of the models in the /api/tags directory. Note that many model names come with an additional tag following a colon, which usually indicates the version of the model (e.g., llama:latest). These secondary tags are removed using `split(":")[0]' to keep only the models' names together in a set. This resulting set is useful to validate the presence of a given model when a client sends a request to prompt a specific model. In this way, we can inform the client whether we can complete its request or not. For example, by replying to a client with the message "Unsupported model" in case the model doesn't exist in our database (see the post request code for more details). 
 
-## Ollama Backend Connectivity
+## Ollama Backend Connectivity & Usage
 
 SecureInferenceGateway requires an active Ollama server to process model inference requests. By default, the gateway connects to the Ollama server using the address specified in your configuration or code (e.g., `http://127.0.0.1:11434`).  
 If Ollama is running on a different machine, update the IP address accordingly to point to the correct host and port.
